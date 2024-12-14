@@ -5,8 +5,9 @@ This Ansible role automates the setup of a Xray VPN Server on a remote host. The
 ## VPN Clients
 
 * AmneziaVPN (Windows, macOS, Linux, Android, iOS...) **Free, Works only with IPv4, without IPv6**
-* FairVPN (macOS, iOS, Android...) **Free, Supports IPv6**
+* FairVPN (macOS, iOS...) **Free, Supports IPv6**
 * V2BOX (Android, iOS...) **Advertisements or pay**
+* v2rayNG (Android) **Free, Works only with IPv4, without IPv6** https://github.com/2dust/v2rayNG
 
 ## Default Variables
 
