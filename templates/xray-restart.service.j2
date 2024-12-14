@@ -1,0 +1,8 @@
+[Unit]
+Description=Restart Xray VPN Service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl restart xray.service
+StandardOutput=journal
+StandardError=journal

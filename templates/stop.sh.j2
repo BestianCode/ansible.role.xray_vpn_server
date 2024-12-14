@@ -1,0 +1,5 @@
+#!/bin/bash
+
+ps ax | grep {{xray_folder}}/bin/xray | grep -v grep | awk '{ print "kill " $1 }' | sh -
+
+sleep 2

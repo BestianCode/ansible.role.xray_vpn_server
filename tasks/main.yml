@@ -1,0 +1,178 @@
+---
+
+- name: Check if fullchain.pem exists
+  stat:
+    path: "/etc/letsencrypt/live/{{ xray_ssl_name }}/fullchain.pem"
+  register: fullchain_file
+
+- name: Check if privkey.pem exists
+  stat:
+    path: "/etc/letsencrypt/live/{{ xray_ssl_name }}/privkey.pem"
+  register: privkey_file
+
+- block:
+  - name: Gather system facts
+    setup:
+
+  - name: Set download URL based on OS and architecture
+    set_fact:
+      xray_download_url: >-
+        {% set os = ansible_facts['os_family'] %}
+        {% set arch = ansible_facts['architecture'] %}
+        {% if os == 'FreeBSD' %}
+          {% if arch == 'x86_64' %}
+            {{xray_url}}/Xray-freebsd-64.zip
+          {% elif arch == 'aarch64' %}
+            {{xray_url}}/Xray-freebsd-arm64-v8a.zip
+          {% else %}
+            ""
+          {% endif %}
+        {% elif os == 'Debian' or os == 'RedHat' or os == 'Ubuntu' %}
+          {% if arch == 'x86_64' %}
+            {{xray_url}}/Xray-linux-64.zip
+          {% elif arch == 'armv7l' %}
+            {{xray_url}}/Xray-linux-arm32-v7a.zip
+          {% elif arch == 'aarch64' %}
+            {{xray_url}}/Xray-linux-arm64-v8a.zip
+          {% else %}
+            ""
+          {% endif %}
+        {% elif os == 'Darwin' %}
+          {% if arch == 'x86_64' %}
+            {{xray_url}}/Xray-macos-64.zip
+          {% elif arch == 'arm64' %}
+            {{xray_url}}/Xray-macos-arm64-v8a.zip
+          {% else %}
+            ""
+          {% endif %}
+          ""
+        {% endif %}
+
+  - name: Create {{ xray_folder }}s
+    file:
+      dest: "{{ xray_folder }}/{{ item }}"
+      state: directory
+      owner: root
+      group: root
+      mode: '0755'
+    with_items:
+      - bin
+      - etc
+      - tmp
+
+  - name: Clean {{ xray_folder }}/tmp
+    file:
+      dest: "{{ xray_folder }}/tmp/*"
+      state: absent
+
+  - name: Download Xray archive
+    get_url:
+      url: "{{ xray_download_url }}"
+      dest: /tmp/xray.zip
+      mode: '0644'
+
+  - name: Unzip Xray archive to {{xray_folder}}/tmp/
+    unarchive:
+      src: /tmp/xray.zip
+      dest: "{{xray_folder}}/tmp/"
+      remote_src: yes
+
+  - name: Stat tmp/xray
+    stat:
+      path: "{{ xray_folder }}/tmp/xray"
+    register: tmp_xray_stat
+
+  - name: Stat bin/xray
+    stat:
+      path: "{{ xray_folder }}/bin/xray"
+    register: bin_xray_stat
+
+  - name: Replace bin/xray with tmp/xray if different, tmp/xray is not empty, or bin/xray does not exist
+    shell: mv "{{ xray_folder }}/tmp/xray" "{{ xray_folder }}/bin/xray"
+    when:
+      - tmp_xray_stat.stat.exists
+      - tmp_xray_stat.stat.size > 0
+      - bin_xray_stat.stat.exists == false or tmp_xray_stat.stat.checksum != bin_xray_stat.stat.checksum
+
+  - name: Ensure bin/xray has correct permissions and ownership
+    file:
+      path: "{{ xray_folder }}/bin/xray"
+      mode: '0755'
+      owner: root
+      group: root
+
+  - name: Create xray group
+    group:
+      name: "{{xray_group}}"
+      system: no
+      state: present
+
+  - name: Create xray user
+    user:
+      name: "{{xray_user}}"
+      comment: "XRay VPN Service user"
+      group: "{{xray_group}}"
+      shell: /sbin/nologin
+      home: "/nonexistent"
+      create_home: no
+
+  - name: Deploy xray config
+    template:
+      src: "{{item.src}}"
+      dest: "{{item.dest}}"
+      mode: "{{item.mode}}"
+      owner: "{{item.user}}"
+      group: "{{item.group}}"
+      decrypt: "{{item.decrypt}}"
+    with_items:
+      - { src: "config.json.j2", dest: "/usr/local/xray/etc/config.json", user: "{{xray_user}}", group: "{{xray_group}}", mode: "0600", decrypt: "no" }
+      - { src: "start.sh.j2",    dest: "/usr/local/xray/start.sh",        user: "{{xray_user}}", group: "{{xray_group}}", mode: "0755", decrypt: "no" }
+      - { src: "stop.sh.j2",     dest: "/usr/local/xray/stop.sh",         user: "{{xray_user}}", group: "{{xray_group}}", mode: "0755", decrypt: "no" }
+      - { src: "certs.sh.j2",    dest: "/usr/local/xray/certs.sh",        user: "{{xray_user}}", group: "{{xray_group}}", mode: "0755", decrypt: "no" }
+
+  when:
+    - xray_ssl_name is defined
+    - fullchain_file.stat.exists
+    - privkey_file.stat.exists
+
+- name: Generate and display VPN connection strings
+  debug:
+    msg: "{{xray_protocol}}://{{ item.uid }}@{{ xray_dns_name }}:{{ xray_port }}?security={{xray_security}}&encryption=none&type={{xray_network_type}}&host={{ xray_dns_name }}&path={{ xray_path }}&fp=chrome#{{ xray_dns_name }}"
+  loop: "{{ xray_users }}"
+  when: xray_users is defined
+
+- name: Create systemd service file for Xray
+  template:
+    src: "xray.service.j2"
+    dest: "/etc/systemd/system/xray.service"
+    mode: "0644"
+  notify:
+    - Reload systemd
+
+- name: Create systemd service file for Xray Restart
+  template:
+    src: "xray-restart.service.j2"
+    dest: "/etc/systemd/system/xray-restart.service"
+    mode: "0644"
+  notify:
+    - Reload systemd
+
+- name: Create systemd timer file for Xray restart
+  template:
+    src: "xray-restart.timer.j2"
+    dest: "/etc/systemd/system/xray-restart.timer"
+    mode: "0644"
+  notify:
+    - Reload systemd
+
+- name: Enable and start Xray service
+  systemd:
+    name: xray
+    enabled: yes
+    state: started
+
+- name: Enable and start Xray restart timer
+  systemd:
+    name: xray-restart.timer
+    enabled: yes
+    state: started

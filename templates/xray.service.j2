@@ -1,0 +1,17 @@
+[Unit]
+Description=Xray VPN Service
+After=network.target
+
+[Service]
+Type=simple
+User={{xray_user}}
+ExecStartPre=/usr/local/xray/certs.sh
+ExecStart={{xray_folder}}/bin/xray run -confdir {{xray_folder}}/etc/
+ExecStop=/usr/local/xray/stop.sh
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

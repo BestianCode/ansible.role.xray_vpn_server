@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cp /etc/letsencrypt/live/{{ xray_ssl_name }}/fullchain.pem {{xray_folder}}/etc/cert.pem
+cp /etc/letsencrypt/live/{{ xray_ssl_name }}/privkey.pem {{xray_folder}}/etc/key.pem
+
+chown -R {{xray_user}}:{{xray_group}} {{xray_folder}}/etc/*.pem
+chmod 0400 {{xray_folder}}/etc/*.pem

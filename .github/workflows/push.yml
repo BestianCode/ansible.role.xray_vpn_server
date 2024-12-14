@@ -1,0 +1,31 @@
+name: Push to Galaxy
+
+env:
+  ANSIBLE_GALAXY_TOKEN: ${{ secrets.ANSIBLE_GALAXY_TOKEN }}
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  push:
+    name: 'Push to Galaxy'
+
+    runs-on: ubuntu-22.04
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: pip install ansible
+      - run: |
+          REPO_NAME=${GITHUB_REPOSITORY#*/}
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          ansible-galaxy role import --branch $TAG_NAME --token ${{ env.ANSIBLE_GALAXY_TOKEN }} ${{ github.repository_owner }} $REPO_NAME
