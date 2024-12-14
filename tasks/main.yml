@@ -160,6 +160,13 @@
       enabled: yes
       state: started
 
+  - name: Check Xray service status
+    shell: service xray status
+    register: sOut
+
+  - debug:
+      var: sOut.stdout_lines
+
   - name: Enable and start Xray restart timer
     systemd:
       name: xray-restart.timer
