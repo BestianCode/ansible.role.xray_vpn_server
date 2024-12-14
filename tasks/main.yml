@@ -158,7 +158,7 @@
     systemd:
       name: xray
       enabled: yes
-      state: started
+      state: restarted
 
   - name: Check Xray service status
     shell: service xray status
