@@ -5,6 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User={{xray_user}}
+PermissionsStartOnly=true
 ExecStartPre=/usr/local/xray/certs.sh
 ExecStart={{xray_folder}}/bin/xray run -confdir {{xray_folder}}/etc/
 ExecStop=/usr/local/xray/stop.sh

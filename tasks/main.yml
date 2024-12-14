@@ -128,7 +128,7 @@
       - { src: "config.json.j2", dest: "/usr/local/xray/etc/config.json", user: "{{xray_user}}", group: "{{xray_group}}", mode: "0600", decrypt: "no" }
       - { src: "start.sh.j2",    dest: "/usr/local/xray/start.sh",        user: "{{xray_user}}", group: "{{xray_group}}", mode: "0755", decrypt: "no" }
       - { src: "stop.sh.j2",     dest: "/usr/local/xray/stop.sh",         user: "{{xray_user}}", group: "{{xray_group}}", mode: "0755", decrypt: "no" }
-      - { src: "certs.sh.j2",    dest: "/usr/local/xray/certs.sh",        user: "{{xray_user}}", group: "{{xray_group}}", mode: "0755", decrypt: "no" }
+      - { src: "certs.sh.j2",    dest: "/usr/local/xray/certs.sh",        user: "root",          group: "{{xray_group}}", mode: "0755", decrypt: "no" }
 
   - name: Create systemd service file for Xray
     template:
