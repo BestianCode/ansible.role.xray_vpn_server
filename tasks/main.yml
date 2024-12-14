@@ -130,49 +130,49 @@
       - { src: "stop.sh.j2",     dest: "/usr/local/xray/stop.sh",         user: "{{xray_user}}", group: "{{xray_group}}", mode: "0755", decrypt: "no" }
       - { src: "certs.sh.j2",    dest: "/usr/local/xray/certs.sh",        user: "{{xray_user}}", group: "{{xray_group}}", mode: "0755", decrypt: "no" }
 
+  - name: Create systemd service file for Xray
+    template:
+      src: "xray.service.j2"
+      dest: "/etc/systemd/system/xray.service"
+      mode: "0644"
+    notify:
+      - Reload systemd
+
+  - name: Create systemd service file for Xray Restart
+    template:
+      src: "xray-restart.service.j2"
+      dest: "/etc/systemd/system/xray-restart.service"
+      mode: "0644"
+    notify:
+      - Reload systemd
+
+  - name: Create systemd timer file for Xray restart
+    template:
+      src: "xray-restart.timer.j2"
+      dest: "/etc/systemd/system/xray-restart.timer"
+      mode: "0644"
+    notify:
+      - Reload systemd
+
+  - name: Enable and start Xray service
+    systemd:
+      name: xray
+      enabled: yes
+      state: started
+
+  - name: Enable and start Xray restart timer
+    systemd:
+      name: xray-restart.timer
+      enabled: yes
+      state: started
+
+  - name: Generate and display VPN connection strings
+    debug:
+      msg: "{{xray_protocol}}://{{ item.uid }}@{{ xray_dns_name }}:{{ xray_port }}?security={{xray_security}}&encryption=none&type={{xray_network_type}}&host={{ xray_dns_name }}&path={{ xray_path }}&fp=chrome#{{ xray_dns_name }}"
+    loop: "{{ xray_users }}"
+    when: xray_users is defined
+
   when:
     - xray_ssl_name is defined
     - fullchain_file.stat.exists
     - privkey_file.stat.exists
-
-- name: Generate and display VPN connection strings
-  debug:
-    msg: "{{xray_protocol}}://{{ item.uid }}@{{ xray_dns_name }}:{{ xray_port }}?security={{xray_security}}&encryption=none&type={{xray_network_type}}&host={{ xray_dns_name }}&path={{ xray_path }}&fp=chrome#{{ xray_dns_name }}"
-  loop: "{{ xray_users }}"
-  when: xray_users is defined
-
-- name: Create systemd service file for Xray
-  template:
-    src: "xray.service.j2"
-    dest: "/etc/systemd/system/xray.service"
-    mode: "0644"
-  notify:
-    - Reload systemd
-
-- name: Create systemd service file for Xray Restart
-  template:
-    src: "xray-restart.service.j2"
-    dest: "/etc/systemd/system/xray-restart.service"
-    mode: "0644"
-  notify:
-    - Reload systemd
-
-- name: Create systemd timer file for Xray restart
-  template:
-    src: "xray-restart.timer.j2"
-    dest: "/etc/systemd/system/xray-restart.timer"
-    mode: "0644"
-  notify:
-    - Reload systemd
-
-- name: Enable and start Xray service
-  systemd:
-    name: xray
-    enabled: yes
-    state: started
-
-- name: Enable and start Xray restart timer
-  systemd:
-    name: xray-restart.timer
-    enabled: yes
-    state: started
