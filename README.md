@@ -16,7 +16,7 @@ For more information on default variables, please refer to the `defaults/main.ym
 
 * __This role should be used together with ansible-galaxy collection bestiancode.nginx_ssl to manage SSL certificates__
 * Galaxy: https://galaxy.ansible.com/ui/repo/published/bestiancode/nginx_ssl/
-* GitHub: https://github.com/BestianCode/ansible.role.signal_proxy#
+* GitHub: https://github.com/BestianCode/ansible.collection.nginx_ssl
 
 You can install this collection and role using the `ansible-galaxy` command:
 
