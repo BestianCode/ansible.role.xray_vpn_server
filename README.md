@@ -4,16 +4,20 @@ This Ansible role automates the setup of a Xray VPN Server on a remote host. The
 
 ## VPN Clients
 
-* AmneziaVPN (Windows, macOS, Linux, Android, iOS...) **Free, Works only with IPv4, without IPv6**
-* Fair, FoXray (macOS, iOS...) **Free, Supports IPv6**
-* V2BOX (Android, iOS...) **Advertisements or pay**
-* v2rayNG (Android) **Free, Works only with IPv4, without IPv6** https://github.com/2dust/v2rayNG
-
 * Clients tested by me or my friends:
   - iPhone:
-    - Fair - Works fine, IPv6 supported, no ads
-    - FoXray - Works fine, IPv6 supported, no ads
-    - AmneziaVPN - Works unstable, IPv4 only, no IPv6, sometimes no traffic.
+    - Fair - Works fine, IPv6 supported
+    - FoXray - Works fine, IPv6 supported
+    - v2RayTun - Works fine, IPv6 supported
+    - V2Box - Works fine, IPv6 supported, but annoing ads
+    - AmneziaVPN - Works unstable, IPv4 only, no IPv6, sometimes no traffic - Not recommended.
+  - Android:
+    - v2rayNG - Works fine, IPv6 supported
+    - v2RayTun - Works fine, IPv6 supported
+    - Hiddify - Works fine, IPv6 supported
+    - HiddifyNG - Works with problems, for me IPv4 was not working... - Not recommended.
+    - AmneziaVPN - Works unstable, IPv4 only, no IPv6, sometimes no traffic - Not recommended.
+    - V2Box - Unusable shit on Android due to ads - Not recommended.
 
 ## Default Variables
 
