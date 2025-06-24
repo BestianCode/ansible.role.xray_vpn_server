@@ -115,6 +115,7 @@
       shell: /sbin/nologin
       home: "/nonexistent"
       create_home: no
+    when: xray_user != 'root'
 
   - name: Deploy xray config
     template:
