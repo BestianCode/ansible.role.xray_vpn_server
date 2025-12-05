@@ -61,3 +61,9 @@ xray_users:
   - { uid: "F6789012-3456-789A-BCDE-F123456789AB", name: "Olivia" }
   - { uid: "67890123-4567-89AB-CDEF-123456789ABC", name: "Daniel" }
   - { uid: "78901234-5678-9ABC-DEF1-23456789ABCD", name: "Ava" }
+
+# Additional setting for proxy protocol (optional)
+xray_proxy_enabled: false
+xray_proxy_listen: 127.0.0.1
+xray_proxy_port: 8444
+xray_proxy_dns_name: "{{ xray_dns_name }}"

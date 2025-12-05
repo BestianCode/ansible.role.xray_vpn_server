@@ -1,51 +1,86 @@
 {
-    "log": {
-      "loglevel": "info"
-    },
-    "inbounds": [
-        {
-            "port": {{xray_port}},
-            "protocol": "{{xray_protocol}}",
-            "settings": {
-                "clients": [
+  "log": {
+    "loglevel": "info"
+  },
+  "inbounds": [
+    {
+      "port": {{ xray_port }},
+      "protocol": "{{ xray_protocol }}",
+      "settings": {
+        "clients": [
 
 {% if xray_users is defined and xray_users | length %}
 {% for x in xray_users %}
-                    {
-                        "id": "{{ x.uid }}",
-                        "level": 0,
-                        "name": "{{ x.name }}"
-                    }{% if not loop.last %},{% endif %}
+          {
+            "id": "{{ x.uid }}",
+            "level": 0,
+            "name": "{{ x.name }}"
+          }{% if not loop.last %},{% endif %}
 {% endfor %}
 {% endif %}
 
-                ],
-                "decryption": "none"
-            },
-            "streamSettings": {
-                "network": "{{xray_network_type}}",
-                "security": "{{xray_security}}",
-                "wsSettings": {
-                    "path": "{{xray_path}}",
-                    "headers": {
-                    "Host": "{{xray_dns_name}}"
-                    }
-                },
-                "tlsSettings": {
-                    "serverName": "{{xray_dns_name}}",
-                    "certificates": [
-                        {
-                            "certificateFile": "{{xray_folder}}/etc/cert.pem",
-                            "keyFile": "{{xray_folder}}/etc/key.pem"
-                        }
-                    ]
-                }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "{{ xray_network_type }}",
+        "security": "{{ xray_security }}",
+        "wsSettings": {
+          "path": "{{ xray_path }}",
+          "headers": {
+            "Host": "{{ xray_dns_name }}"
+          }
+        },
+        "tlsSettings": {
+          "serverName": "{{ xray_dns_name }}",
+          "certificates": [
+            {
+              "certificateFile": "{{ xray_folder }}/etc/cert.pem",
+              "keyFile": "{{ xray_folder }}/etc/key.pem"
             }
+          ]
         }
-    ],
-    "outbounds": [{
+      }
+    }
+{% if xray_proxy_enabled | default(false) %}
+    ,
+    {
+      "port": {{ xray_proxy_port }},
+      "listen": "{{ xray_proxy_listen | default('127.0.0.1') }}",
+      "protocol": "{{ xray_protocol }}",
+      "settings": {
+        "clients": [
+
+{% if xray_users is defined and xray_users | length %}
+{% for x in xray_users %}
+          {
+            "id": "{{ x.uid }}",
+            "level": 0,
+            "name": "{{ x.name }}"
+          }{% if not loop.last %},{% endif %}
+{% endfor %}
+{% endif %}
+
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "{{ xray_network_type }}",
+        "security": "none",
+        "wsSettings": {
+          "path": "{{ xray_path }}",
+          "headers": {
+            "Host": "{{ xray_proxy_dns_name }}"
+          }
+        }
+      }
+    }
+{% endif %}
+  ],
+  "outbounds": [
+    {
       "protocol": "freedom",
       "settings": {}
-    }]
-  }
+    }
+  ]
 }
