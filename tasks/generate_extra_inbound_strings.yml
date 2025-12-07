@@ -13,7 +13,7 @@
       {% if security == 'reality' %}
       {{xray_protocol}}://{{ item.uid }}@{{ ext_dns }}:{{ ext_port }}?security=reality&encryption=none&type={{ network }}&flow={{ current_inbound.flow }}&sni={{ current_inbound.reality_server_names[0] | default('www.google.com') }}&pbk={{ current_inbound.reality_public_key }}&sid={{ current_inbound.reality_short_ids[0] | default('') }}&fp=chrome#{{ ext_dns }}
       {% else %}
-      {{xray_protocol}}://{{ item.uid }}@{{ ext_dns }}:{{ ext_port }}?security=tls&encryption=none&type={{ network }}{% if network == 'ws' %}&host={{ ext_dns }}&path={{ current_inbound.path | default(xray_path) }}{% endif %}#{{ ext_dns }}
+      {{xray_protocol}}://{{ item.uid }}@{{ ext_dns }}:{{ ext_port }}?security=tls&encryption=none&type={{ network }}{% if network == 'ws' %}&host={{ ext_dns }}&path={{ current_inbound.path | default(xray_path) }}{% endif %}&fp=chrome#{{ ext_dns }}
       {% endif %}
   loop: "{{ current_inbound.users | default(xray_users) }}"
   loop_control:
