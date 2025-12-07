@@ -3,6 +3,7 @@
     "loglevel": "info"
   },
   "inbounds": [
+{% if xray_port is defined and xray_port != "" %}
     {
       "port": {{ xray_port }},
       "protocol": "{{ xray_protocol }}",
@@ -42,19 +43,38 @@
         }
       }
     }
-{% if xray_proxy_enabled | default(false) %}
+{% else %}
+    {
+      "port": 65501,
+      "listen": "127.0.0.1",
+      "protocol": "vless",
+      "settings": {
+        "clients": [],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "none"
+      }
+    }
+{% endif %}
+{% if xray_extra_inbounds is defined and xray_extra_inbounds | length %}
+{% for inbound in xray_extra_inbounds %}
     ,
     {
-      "port": {{ xray_proxy_port }},
-      "listen": "{{ xray_proxy_listen | default('127.0.0.1') }}",
+      "port": {{ inbound.port }},
+      "listen": "{{ inbound.listen | default('127.0.0.1') }}",
       "protocol": "{{ xray_protocol }}",
       "settings": {
         "clients": [
-
-{% if xray_users is defined and xray_users | length %}
-{% for x in xray_users %}
+{% set inbound_users = inbound.users | default(xray_users) %}
+{% if inbound_users is defined and inbound_users | length %}
+{% for x in inbound_users %}
           {
             "id": "{{ x.uid }}",
+{% if inbound.flow is defined %}
+            "flow": "{{ inbound.flow }}",
+{% endif %}
             "level": 0,
             "name": "{{ x.name }}"
           }{% if not loop.last %},{% endif %}
@@ -65,16 +85,41 @@
         "decryption": "none"
       },
       "streamSettings": {
-        "network": "{{ xray_network_type }}",
-        "security": "none",
+        "network": "{{ inbound.network | default(xray_network_type) }}",
+        "security": "{{ inbound.security | default('none') }}"{% if inbound.network | default(xray_network_type) == 'ws' %},
         "wsSettings": {
-          "path": "{{ xray_path }}",
+          "path": "{{ inbound.path | default(xray_path) }}",
           "headers": {
-            "Host": "{{ xray_proxy_dns_name }}"
+            "Host": "{{ inbound.dns_name | default(xray_dns_name) }}"
           }
-        }
+        }{% endif %}{% if inbound.network | default(xray_network_type) == 'tcp' %},
+        "tcpSettings": {
+          "acceptProxyProtocol": {{ inbound.accept_proxy_protocol | default(false) | lower }}
+        }{% endif %}{% if inbound.network | default(xray_network_type) == 'grpc' %},
+        "grpcSettings": {
+          "serviceName": "{{ inbound.grpc_service_name | default('grpc') }}"
+        }{% endif %}{% if inbound.security | default('none') == 'tls' %},
+        "tlsSettings": {
+          "serverName": "{{ inbound.dns_name | default(xray_dns_name) }}",
+          "certificates": [
+            {
+              "certificateFile": "{{ inbound.cert_file | default(xray_folder + '/etc/cert.pem') }}",
+              "keyFile": "{{ inbound.key_file | default(xray_folder + '/etc/key.pem') }}"
+            }
+          ]
+        }{% endif %}{% if inbound.security | default('none') == 'reality' %},
+        "realitySettings": {
+          "show": false,
+          "dest": "{{ inbound.reality_dest | default('www.google.com:443') }}",
+          "xver": 0,
+          "serverNames": {{ inbound.reality_server_names | default(['www.google.com']) | to_json }},
+          "privateKey": "{{ inbound.reality_private_key }}",
+          "shortIds": {{ inbound.reality_short_ids | default(['']) | to_json }}
+        }{% endif %}
+
       }
     }
+{% endfor %}
 {% endif %}
   ],
   "outbounds": [

@@ -70,6 +70,7 @@
       url: "{{ xray_download_url }}"
       dest: /tmp/xray.zip
       mode: '0644'
+    check_mode: no
 
   - name: Unzip Xray archive to {{xray_folder}}/tmp/
     unarchive:
@@ -174,11 +175,21 @@
       enabled: yes
       state: started
 
-  - name: Generate and display VPN connection strings
+  - name: Generate and display VPN connection strings (main inbound)
     debug:
       msg: "{{xray_protocol}}://{{ item.uid }}@{{ xray_dns_name }}:{{ xray_port }}?security={{xray_security}}&encryption=none&type={{xray_network_type}}&host={{ xray_dns_name }}&path={{ xray_path }}&fp=chrome#{{ xray_dns_name }}"
     loop: "{{ xray_users }}"
-    when: xray_users is defined
+    when: xray_users is defined and xray_port is defined
+
+  - name: Generate VPN connection strings for extra inbounds
+    include_tasks: generate_extra_inbound_strings.yml
+    loop: "{{ xray_extra_inbounds }}"
+    loop_control:
+      loop_var: current_inbound
+      label: "{{ current_inbound.external_dns_name | default(current_inbound.dns_name | default(xray_dns_name)) }}"
+    when:
+      - xray_extra_inbounds is defined
+      - xray_extra_inbounds | length > 0
 
   when:
     - xray_ssl_name is defined

@@ -28,7 +28,11 @@
 xray_dns_name: "{{ ansible_host }}"
 xray_ssl_name: "{{ xray_dns_name }}"
 
-xray_port: 8443
+# Main inbound port (optional)
+# If not defined, a minimal inbound will be created on 127.0.0.1:65501 (tcp, no security)
+# This is useful when you only want to use extra_inbounds
+# xray_port: 8443
+
 xray_path: /maps
 
 xray_ver: v25.6.8
@@ -62,8 +66,56 @@ xray_users:
   - { uid: "67890123-4567-89AB-CDEF-123456789ABC", name: "Daniel" }
   - { uid: "78901234-5678-9ABC-DEF1-23456789ABCD", name: "Ava" }
 
-# Additional setting for proxy protocol (optional)
-xray_proxy_enabled: false
-xray_proxy_listen: 127.0.0.1
-xray_proxy_port: 8444
-xray_proxy_dns_name: "{{ xray_dns_name }}"
+# Additional inbounds (optional)
+# You can define multiple extra inbound configurations
+#
+# Supported network types: ws, tcp, grpc
+# Supported security types: none, tls, reality
+#
+# Example:
+# xray_extra_inbounds:
+#   # WebSocket with no TLS (behind reverse proxy)
+#   - port: 8444
+#     listen: 127.0.0.1        # default: 127.0.0.1
+#     dns_name: "proxy1.example.com"  # default: xray_dns_name
+#     external_port: 443       # external port for client connections (default: port)
+#     external_dns_name: "vpn.example.com"  # external DNS for client connections (default: dns_name)
+#     network: ws              # default: xray_network_type (ws)
+#     security: none           # default: none
+#     path: /maps              # default: xray_path
+#     users: "{{ xray_users }}"  # default: xray_users - can specify custom list
+#
+#   # WebSocket with TLS (custom certificates)
+#   - port: 8445
+#     listen: 0.0.0.0
+#     dns_name: "proxy2.example.com"
+#     network: ws
+#     security: tls
+#     path: /custom
+#     cert_file: "/etc/ssl/certs/custom.pem"      # default: {{ xray_folder }}/etc/cert.pem
+#     key_file: "/etc/ssl/private/custom.key"     # default: {{ xray_folder }}/etc/key.pem
+#     users:                   # custom user list for this inbound only
+#       - { uid: "CUSTOM-UUID-1", name: "SpecialUser1" }
+#       - { uid: "CUSTOM-UUID-2", name: "SpecialUser2" }
+#
+#   # VLESS-XTLS-Reality (recommended for anti-censorship)
+#   # Using HAProxy on port 443 to proxy to internal port 44444
+#   - port: 44444
+#     listen: 127.0.0.1
+#     external_port: 443       # HAProxy listens on 443
+#     external_dns_name: "vpn.example.com"  # public DNS name
+#     network: tcp
+#     security: reality
+#     flow: xtls-rprx-vision   # required for reality
+#     reality_dest: "www.google.com:443"  # SNI destination
+#     reality_server_names:
+#       - "www.google.com"
+#       - "google.com"
+#     reality_private_key: "YOUR_PRIVATE_KEY"  # generate with: xray x25519
+#     reality_public_key: "YOUR_PUBLIC_KEY"    # for client connection strings
+#     reality_short_ids:       # generate with: openssl rand -hex 4
+#       - ""
+#       - "0123456789abcdef"
+#     users: "{{ xray_users }}"
+#
+xray_extra_inbounds: []
