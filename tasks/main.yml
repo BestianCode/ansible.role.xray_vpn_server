@@ -4,11 +4,13 @@
   stat:
     path: "/etc/letsencrypt/live/{{ xray_ssl_name }}/fullchain.pem"
   register: fullchain_file
+  when: xray_ssl_name is defined
 
 - name: Check if privkey.pem exists
   stat:
     path: "/etc/letsencrypt/live/{{ xray_ssl_name }}/privkey.pem"
   register: privkey_file
+  when: xray_ssl_name is defined
 
 - block:
   - name: Gather system facts
@@ -192,6 +194,4 @@
       - xray_extra_inbounds | length > 0
 
   when:
-    - xray_ssl_name is defined
-    - fullchain_file.stat.exists
-    - privkey_file.stat.exists
+    - (xray_users is defined) or (xray_extra_inbounds is defined and xray_extra_inbounds | length > 0)
