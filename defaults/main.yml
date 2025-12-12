@@ -82,6 +82,7 @@ xray_users:
 #     external_dns_name: "vpn.example.com"  # external DNS for client connections (default: dns_name)
 #     network: ws              # default: xray_network_type (ws)
 #     security: none           # default: none
+#     proxy_protocol: true     # default: false
 #     path: /maps              # default: xray_path
 #     users: "{{ xray_users }}"  # default: xray_users - can specify custom list
 #

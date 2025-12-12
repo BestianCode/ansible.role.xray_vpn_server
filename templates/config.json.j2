@@ -87,6 +87,11 @@
       "streamSettings": {
         "network": "{{ inbound.network | default(xray_network_type) }}",
         "security": "{{ inbound.security | default('none') }}"{% if inbound.network | default(xray_network_type) == 'ws' %},
+{% if inbound.proxy_protocol | default(false) %}
+        "sockopt": {
+          "acceptProxyProtocol": {{inbound.proxy_protocol | lower }}
+        },
+{% endif %}
         "wsSettings": {
           "path": "{{ inbound.path | default(xray_path) }}",
           "headers": {
