@@ -164,7 +164,7 @@
       state: directory
       mode: "0755"
 
-  - name: Set LimitNOFILE for xray
+  - name: Set LimitNOFILE for Xray
     ansible.builtin.copy:
       dest: /etc/systemd/system/xray.service.d/override.conf
       mode: "0644"
@@ -172,7 +172,7 @@
         [Service]
         LimitNOFILE={{ xray_worker_rlimit_nofile | default(1024000) }}
 
-  - name: Set ulimits for xray
+  - name: Set ulimits for Xray
     ansible.builtin.copy:
       dest: /etc/security/limits.d/900-xray.conf
       mode: "0644"
@@ -184,7 +184,7 @@
     ansible.builtin.systemd:
       daemon_reload: true
 
-  - name: Enable and start Xray service
+  - name: Enable and restart Xray service
     systemd:
       name: xray
       enabled: yes
