@@ -37,7 +37,7 @@ xray_ssl_name: "{{ xray_dns_name }}"
 
 xray_path: /maps
 
-xray_ver: v25.6.8
+xray_ver: v26.2.2
 xray_url: "https://github.com/XTLS/Xray-core/releases/download/{{xray_ver}}"
 
 xray_folder: /usr/local/xray
