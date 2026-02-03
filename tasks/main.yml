@@ -158,6 +158,32 @@
     notify:
       - Reload systemd
 
+- name: Ensure systemd override dir for Xray exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/xray.service.d
+    state: directory
+    mode: "0755"
+
+- name: Set LimitNOFILE for xray
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/xray.service.d/override.conf
+    mode: "0644"
+    content: |
+      [Service]
+      LimitNOFILE={{ xray_worker_rlimit_nofile | default(1024000) }}
+
+- name: Set ulimits for xray
+  ansible.builtin.copy:
+    dest: /etc/security/limits.d/900-xray.conf
+    mode: "0644"
+    content: |
+      xray soft nofile {{ xray_worker_rlimit_nofile | default(1024000) }}
+      xray hard nofile {{ xray_worker_rlimit_nofile | default(1024000) }}
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
   - name: Enable and start Xray service
     systemd:
       name: xray

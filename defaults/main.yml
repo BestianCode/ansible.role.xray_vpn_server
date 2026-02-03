@@ -17,6 +17,8 @@
 #   - name: bestiancode.xray_vpn_server
 # ```
 
+xray_worker_rlimit_nofile: 1024000
+
 #
 # Xray VPN Server connection strings will be provided as the latest step of the ansible role
 #
