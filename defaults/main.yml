@@ -37,7 +37,7 @@ xray_ssl_name: "{{ xray_dns_name }}"
 
 xray_path: /maps
 
-xray_ver: v26.2.2
+xray_ver: v26.2.6
 xray_url: "https://github.com/XTLS/Xray-core/releases/download/{{xray_ver}}"
 
 xray_folder: /usr/local/xray
@@ -56,6 +56,9 @@ xray_network_type: ws
 #
 # uuidgen
 #
+# Hide client names in generated config (`name` field) when set to true
+xray_private_deploy: true
+
 xray_users:
   - { uid: "E6AA699D-8642-4767-8C98-DB93F958A48B", name: "John" }
   - { uid: "39ADD62B-B607-4C56-866F-364F4056EF83", name: "Vika" }

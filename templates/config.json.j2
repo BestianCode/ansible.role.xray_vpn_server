@@ -14,8 +14,8 @@
 {% for x in xray_users %}
           {
             "id": "{{ x.uid }}",
-            "level": 0,
-            "name": "{{ x.name }}"
+            "level": 0{% if not (xray_private_deploy | default(false)) %},
+            "name": "{{ x.name }}"{% endif %}
           }{% if not loop.last %},{% endif %}
 {% endfor %}
 {% endif %}
@@ -75,8 +75,8 @@
 {% if inbound.flow is defined %}
             "flow": "{{ inbound.flow }}",
 {% endif %}
-            "level": 0,
-            "name": "{{ x.name }}"
+            "level": 0{% if not (xray_private_deploy | default(false)) %},
+            "name": "{{ x.name }}"{% endif %}
           }{% if not loop.last %},{% endif %}
 {% endfor %}
 {% endif %}
